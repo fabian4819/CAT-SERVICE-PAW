@@ -21,11 +21,11 @@ app.use(morgan("dev"));
 app.use(cors());
 
 // MONGODB CONNECTION
-if (!process.env.MONGO_URL) {
+if (!process.env.MONGO_URI) {
     throw Error("Database connection string not found");
 }
 mongoose
-    .connect(process.env.MONGO_URL)
+    .connect(process.env.MONGO_URI)
     .then(() => {
     console.log("Succesfully connected to MongoDB");
     })
@@ -37,7 +37,8 @@ mongoose
 // ROUTES
 app.get("/", (req, res) => {
     res.send("Hello from PAW Backend Service!");
-    });
+  });
+  app.use("/cat", require("./src/routes/CatRoutes"));
 
 // APP START
 app.listen(5000, () => {
