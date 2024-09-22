@@ -41,6 +41,7 @@ app.get("/", (req, res) => {
   app.use("/cat", require("./src/routes/CatRoutes"));
   app.use("/customer", require("./src/routes/CustomerRoutes"));
   app.use("/Adoption", require("./src/routes/AdoptionRoutes"));
+  app.use("/service", require("./src/routes/ServiceRoutes"));
 
 
 // APP START
