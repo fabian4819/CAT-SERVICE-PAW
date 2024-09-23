@@ -1,19 +1,20 @@
 const Employee = require("../models/EmployeeModels");
   
 exports.createEmployee = async (req, res) => {
-    const { name, email, phone, address } = req.body;
+    const { name, position, email, phone, hireDate } = req.body;
 
     const employee = new Employee({
         name,
+        position,
         email,
         phone,
-        address,
+        hireDate,
     });
     employee
         .save()
         .then(() => {
             res.status(200).json({
-                message: "Karyawan berhasil ditambahkan!",
+                message: "Karyawan berhasil dibuat!",
                 data: name,
             });
         })
@@ -23,6 +24,7 @@ exports.createEmployee = async (req, res) => {
             });
         });
 };
+
 
 exports.readEmployee = async (req, res) => {
     Employee.find() 
@@ -38,16 +40,16 @@ exports.readEmployee = async (req, res) => {
         });
 };
 
-
 exports.updateEmployee = async (req, res) => {
-    const { id } = req.params; 
-    const { name, email, phone, address } = req.body;
+    const { id } = req.params;
+    const { name, position, email, phone, hireDate } = req.body;
 
     Employee.findByIdAndUpdate(id, {
         name,
+        position,
         email,
         phone,
-        address,
+        hireDate,
     })
         .then(() => {
             res.status(200).json({
@@ -61,14 +63,13 @@ exports.updateEmployee = async (req, res) => {
         });
 };
 
-
 exports.deleteEmployee = async (req, res) => {
     const { id } = req.params; 
 
     Employee.findByIdAndDelete(id)
         .then(() => {
             res.status(200).json({
-                message: "Karyawan berhasil dihapus :(",
+                message: "Karyawan berhasil dihapus!",
             });
         })
         .catch((err) => {
@@ -85,7 +86,7 @@ exports.sortEmployees = async (req, res) => {
     // Default order is ascending
     const order = sortOrder === "desc" ? -1 : 1;
 
-    const allowedSortFields = ["name"];
+    const allowedSortFields = ["name","position"];
     const isValidSortField = allowedSortFields.includes(sortBy);
 
     if (!isValidSortField) {
