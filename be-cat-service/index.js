@@ -42,6 +42,7 @@ app.get("/", (req, res) => {
   app.use("/customer", require("./src/routes/CustomerRoutes"));
   app.use("/Adoption", require("./src/routes/AdoptionRoutes"));
   app.use("/service", require("./src/routes/ServiceRoutes"));
+  app.use("/employee", require("./src/routes/EmployeeRoutes"));
 
 
 // APP START
