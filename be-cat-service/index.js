@@ -40,8 +40,11 @@ app.get("/", (req, res) => {
   });
   app.use("/cat", require("./src/routes/CatRoutes"));
   app.use("/customer", require("./src/routes/CustomerRoutes"));
+  app.use("/Adoption", require("./src/routes/AdoptionRoutes"));
+
 
 // APP START
 app.listen(5000, () => {
     console.log("Server is running on http://localhost:5000");
     });
+
