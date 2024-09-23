@@ -16,13 +16,21 @@ const kelolaKucing = () => {
         null
     ); // Menyimpan indeks baris yang terbuka dropdown-nya
     const [cats, setCats] = useState<any[]>([]); // Menyimpan data kucing
-    const [searchKeyword, setSearchKeyword] = useState<string>(""); // Menyimpan keyword pencarian
+    const [keyword, setSearchKeyword] = useState<string>(""); // Menyimpan keyword pencarian
     const [sortBy, setSortBy] = useState<string>("name"); // Menyimpan field pengurutan
     const [selectedCatId, setSelectedCatId] = useState<string | null>(null); // Menyimpan id kucing yang dipilih
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // Menyimpan status modal
     const [modalAction, setModalAction] = useState<"edit" | "delete" | null>(
         null
     );
+    const [newCatData, setNewCatData] = useState({
+        name: '',
+        breed: '',
+        age: '',
+        gender: '',
+        vaccinationStatus: '',
+        description: ''
+    });
     const [editCatData, setEditCatData] = useState({
         name: '',
         breed: '',
@@ -31,6 +39,7 @@ const kelolaKucing = () => {
         vaccinationStatus: '',
         description: ''
     }); // Menyimpan tindakan modal
+
 
     // Fetch data kucing dari API
     const fetchCats = async () => {
@@ -47,12 +56,25 @@ const kelolaKucing = () => {
         }
     };
 
-    // Search and Sort
-    const searchAndSortCats = async () => {
+    const searchCats = async () => {
         try {
             const response = await axios.get(`http://localhost:5000/cat/search`, {
                 params: {
-                    keyword: searchKeyword,
+                    keyword,
+
+                },
+            });
+            setCats(response.data.data);
+        } catch (error) {
+            console.error("Error searching cats:", error);
+        }
+    };
+
+    // Search and Sort
+    const searchAndSortCats = async () => {
+        try {
+            const response = await axios.get(`http://localhost:5000/cat/sort`, {
+                params: {
                     sortBy,
                     sortOrder: isAscending ? "asc" : "desc",
                 },
@@ -62,6 +84,28 @@ const kelolaKucing = () => {
             console.error("Error searching or sorting cats:", error);
         }
     };
+
+    const handleAddCat = async () => {
+        try {
+            const response = await axios.post('http://localhost:5000/cat/create', {
+                name: "Test Cat",
+                breed: "Siamese",
+                age: 2,
+                gender: "female",
+                vaccinationStatus: "vaccinated",
+                description: "A playful cat"
+            });
+            console.log("Response from server:", response.data);
+            fetchCats(); // Refresh data setelah menambah kucing baru
+            closeModal(); // Tutup modal setelah penambahan berhasil
+        } catch (error) {
+            console.error("Error adding new cat:", error);
+        }
+    };
+
+
+
+
 
     // Toggle dropdown
     const handleDropdownToggle = (index: number) => {
@@ -84,11 +128,11 @@ const kelolaKucing = () => {
     };
 
     // Fungsi untuk membuka modal
-    const openModal = (action: "edit" | "delete", id: string) => {
+    const openModal = (action: "edit" | "delete" | "add", id: string | null) => {
         setSelectedCatId(id);
         setModalAction(action);
 
-        if (action === "edit") {
+        if (action === "edit" && id) {
             const selectedCat = cats.find((cat) => cat._id === id);
             if (selectedCat) {
                 setEditCatData({
@@ -100,10 +144,20 @@ const kelolaKucing = () => {
                     description: selectedCat.description,
                 });
             }
+        } else if (action === "add") {
+            setNewCatData({
+                name: "",
+                breed: "",
+                age: "",
+                gender: "",
+                vaccinationStatus: "",
+                description: "",
+            });
         }
 
         setIsModalOpen(true);
     };
+
 
     // Fungsi untuk menutup modal
     const closeModal = () => {
@@ -130,7 +184,10 @@ const kelolaKucing = () => {
     // Fetch data pada perubahan searchKeyword, sortBy, atau isAscending
     useEffect(() => {
         searchAndSortCats();
-    }, [searchKeyword, sortBy, isAscending]);
+    }, [keyword, sortBy, isAscending]);
+    useEffect(() => {
+        searchCats();
+    }, [keyword]);
 
     return (
         <div className="p-8 bg-white min-h-screen">
@@ -147,16 +204,14 @@ const kelolaKucing = () => {
                         type="text"
                         placeholder="Cari Kucing"
                         className="w-[415px] border-2 text-[#1c1c1c] border-[#1c1c1c] rounded-full py-2 px-4 "
-                        value={searchKeyword}
+                        value={keyword}
                         onChange={(e) => setSearchKeyword(e.target.value)}
                     />
-                    <button onClick={searchAndSortCats}>
+                    <button onClick={searchCats}>
                         <FaSearch className="absolute top-1/2 left-96 transform -translate-y-1/2 text-[#1c1c1c]" />
                     </button>
                 </div>
-                <button className="ml-4 p-2 w-[58px] h-[38px] px-2.5 py-[5px] bg-white rounded-[25px] border-2 border-[#1d1d21] justify-center items-center gap-1.5 inline-flex ">
-                    <FaFilter className="w-6 h-6 text-[#1c1c1c]" />
-                </button>
+
                 <div className="ml-4 p-2 w-[326px] h-[38px] px-5 py-[5px] bg-white rounded-[25px] border-2 border-[#1d1d21] text-[#1d1d21] justify-start items-center gap-3 inline-flex">
                     <span>Urutkan berdasarkan:</span>
                     <select
@@ -241,7 +296,13 @@ const kelolaKucing = () => {
                     ))}
                 </tbody>
             </table>
-            <button className="mt-4 bg-black text-white py-2 px-4 rounded">Tambah Kucing Baru</button>
+            {/* <button
+                onClick={() => openModal("add", null)} // Open the modal for adding a new cat
+                className="mt-4 bg-black text-white py-2 px-4 rounded"
+            >
+                Tambah Kucing Baru
+            </button> */}
+
             <div className="flex justify-center mt-4">
                 <button className="bg-[#000000] text-white py-2 px-4 rounded mr-2">Sebelumnya</button>
                 <button className="bg-[#000000] text-white py-2 px-4 rounded">Berikutnya</button>
@@ -250,51 +311,59 @@ const kelolaKucing = () => {
             {isModalOpen && (
                 <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-white p-8 rounded shadow-lg">
-                        <h3 className="text-2xl font-bold mb-4">
-                            {modalAction === "edit" ? "Edit Kucing" : "Hapus Kucing"}
+                        <h3 className="text-2xl font-bold mb-4 text-[#000000]">
+                            {modalAction === "edit" ? "Edit Kucing" : modalAction === "add" ? "Tambah Kucing Baru" : "Hapus Kucing"}
                         </h3>
 
-                        {modalAction === "edit" ? (
-                            // Form untuk mengedit kucing
-                            <div>
+                        {modalAction === "edit" || modalAction === "add" ? (
+                            // Form for editing or adding a new cat
+                            <div className=" text-[#000000]">
                                 <label className="block mb-2">Nama Kucing</label>
                                 <input
                                     type="text"
-                                    value={editCatData.name}
-                                    onChange={(e) => setEditCatData({ ...editCatData, name: e.target.value })}
+                                    value={modalAction === "edit" ? editCatData.name : newCatData.name}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, name: e.target.value })
+                                        : setNewCatData({ ...newCatData, name: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 />
 
                                 <label className="block mb-2">Jenis (Breed)</label>
                                 <input
                                     type="text"
-                                    value={editCatData.breed}
-                                    onChange={(e) => setEditCatData({ ...editCatData, breed: e.target.value })}
+                                    value={modalAction === "edit" ? editCatData.breed : newCatData.breed}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, breed: e.target.value })
+                                        : setNewCatData({ ...newCatData, breed: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 />
 
                                 <label className="block mb-2">Umur</label>
                                 <input
                                     type="number"
-                                    value={editCatData.age}
-                                    onChange={(e) => setEditCatData({ ...editCatData, age: e.target.value })}
+                                    value={modalAction === "edit" ? editCatData.age : newCatData.age}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, age: e.target.value })
+                                        : setNewCatData({ ...newCatData, age: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 />
 
                                 <label className="block mb-2">Jenis Kelamin</label>
                                 <input
                                     type="text"
-                                    value={editCatData.gender}
-                                    onChange={(e) => setEditCatData({ ...editCatData, gender: e.target.value })}
+                                    value={modalAction === "edit" ? editCatData.gender : newCatData.gender}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, gender: e.target.value })
+                                        : setNewCatData({ ...newCatData, gender: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 />
 
                                 <label className="block mb-2">Status Vaksinasi</label>
                                 <select
-                                    value={editCatData.vaccinationStatus}
-                                    onChange={(e) =>
-                                        setEditCatData({ ...editCatData, vaccinationStatus: e.target.value })
-                                    }
+                                    value={modalAction === "edit" ? editCatData.vaccinationStatus : newCatData.vaccinationStatus}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, vaccinationStatus: e.target.value })
+                                        : setNewCatData({ ...newCatData, vaccinationStatus: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 >
                                     <option value="vaccinated">Tervaksinasi</option>
@@ -303,17 +372,17 @@ const kelolaKucing = () => {
 
                                 <label className="block mb-2">Deskripsi</label>
                                 <textarea
-                                    value={editCatData.description}
-                                    onChange={(e) =>
-                                        setEditCatData({ ...editCatData, description: e.target.value })
-                                    }
+                                    value={modalAction === "edit" ? editCatData.description : newCatData.description}
+                                    onChange={(e) => modalAction === "edit"
+                                        ? setEditCatData({ ...editCatData, description: e.target.value })
+                                        : setNewCatData({ ...newCatData, description: e.target.value })}
                                     className="border px-2 py-1 w-full mb-4"
                                 />
                             </div>
                         ) : (
-                            <p className="mb-4">
+                            <p className="mb-4 text-[#000000]">
                                 Apakah Anda yakin ingin{" "}
-                                {modalAction === "edit" ? "mengedit" : "menghapus"} kucing ini?
+                                {modalAction === "delete" ? "menghapus" : "menambah"} kucing ini?
                             </p>
                         )}
 
@@ -325,25 +394,28 @@ const kelolaKucing = () => {
                                 Batal
                             </button>
                             <button
-                                className={`${modalAction === "edit"
+                                className={`${modalAction === "edit" || modalAction === "add"
                                     ? "bg-blue-500 hover:bg-blue-600"
-                                    : "bg-red-500 hover:bg-red-600"
-                                    } text-white font-bold py-2 px-4 rounded`}
+                                    : "bg-red-500 hover:bg-red-600"} text-white font-bold py-2 px-4 rounded`}
                                 onClick={() => {
                                     if (modalAction === "edit") {
-                                        handleEditCat(); // Panggil fungsi untuk menyimpan perubahan edit
+                                        handleEditCat(); // Call function to save edits
                                     } else if (modalAction === "delete") {
-                                        handleDeleteCat(selectedCatId!); // Panggil fungsi untuk menghapus kucing
+                                        handleDeleteCat(selectedCatId!); // Call function to delete
+                                    } else if (modalAction === "add") {
+                                        handleAddCat(); // Call function to add a new cat
                                     }
                                     closeModal();
                                 }}
                             >
-                                {modalAction === "edit" ? "Simpan Perubahan" : "Hapus"}
+                                {modalAction === "edit" ? "Simpan Perubahan" : modalAction === "add" ? "Tambah Kucing" : "Hapus"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
+
+
 
         </div>
     );
