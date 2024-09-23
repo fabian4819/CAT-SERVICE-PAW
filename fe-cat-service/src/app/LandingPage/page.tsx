@@ -1,4 +1,6 @@
 import React from 'react';
+import Link from "next/link";
+import { links } from "@/configs/dir";
 
 const page = () => {
     return (
@@ -18,13 +20,14 @@ const page = () => {
             <h1 className="text-4xl font-bold mb-4">Silahkan pilih layanan</h1>
             <h2 className="text-4xl font-bold mb-8">Kucing PAW Pet Adoption Center</h2>
             <div className="flex items-center justify-center space-x-10 text-[#1E1E1E] font-bold text-xl">
+                <Link href={links.KelolaKucing}>
                 <div className="flex flex-col items-center">
                     <button>
-
                     <img src='/assets/images/icon-kelolakucing.png' className="w-[137px] h-[137px] relative"></img>
                     </button>
                     <button className="bg-white  px-[0.52vw] py-[0.78vw] mt-10">Kelola Kucing</button>
                 </div>
+                </Link>
                 <div className="flex flex-col items-center">
                     <button>
 
